@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Application architecture
+- Keep learning content in typed browser-safe data modules and page views in focused feature components; leaf routes own metadata and typed URLs.
+- Keep prototype progress, preferences, bookmarks and notes in one React context hydrated from localStorage after mount; no backend or fake authentication is used.
+- Use accessible shared UI primitives for actions and dialogs and semantic global CSS tokens for all visual styles.

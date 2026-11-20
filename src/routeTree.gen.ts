@@ -10,33 +10,208 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CareerRoadmapRouteImport } from './routes/career-roadmap'
+import { Route as CodingArenaRouteImport } from './routes/coding-arena'
+import { Route as InterviewQuestionsRouteImport } from './routes/interview-questions'
+import { Route as InterviewStudioRouteImport } from './routes/interview-studio'
+import { Route as LearningPathsRouteImport } from './routes/learning-paths'
+import { Route as SystemDesignRouteImport } from './routes/system-design'
+import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as WorkspaceRouteImport } from './routes/workspace'
+import { Route as CodingArenaChallengeIdRouteImport } from './routes/coding-arena_.$challengeId'
+import { Route as InterviewQuestionsQuestionIdRouteImport } from './routes/interview-questions_.$questionId'
+import { Route as LearningPathsPathIdRouteImport } from './routes/learning-paths_.$pathId'
+import { Route as SystemDesignProblemIdRouteImport } from './routes/system-design_.$problemId'
+import { Route as LearningPathsPathIdTopicIdRouteImport } from './routes/learning-paths_.$pathId_.$topicId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CareerRoadmapRoute = CareerRoadmapRouteImport.update({
+  id: '/career-roadmap',
+  path: '/career-roadmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CodingArenaRoute = CodingArenaRouteImport.update({
+  id: '/coding-arena',
+  path: '/coding-arena',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InterviewQuestionsRoute = InterviewQuestionsRouteImport.update({
+  id: '/interview-questions',
+  path: '/interview-questions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InterviewStudioRoute = InterviewStudioRouteImport.update({
+  id: '/interview-studio',
+  path: '/interview-studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LearningPathsRoute = LearningPathsRouteImport.update({
+  id: '/learning-paths',
+  path: '/learning-paths',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SystemDesignRoute = SystemDesignRouteImport.update({
+  id: '/system-design',
+  path: '/system-design',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkspaceRoute = WorkspaceRouteImport.update({
+  id: '/workspace',
+  path: '/workspace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CodingArenaChallengeIdRoute = CodingArenaChallengeIdRouteImport.update({
+  id: '/coding-arena_/$challengeId',
+  path: '/coding-arena/$challengeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InterviewQuestionsQuestionIdRoute =
+  InterviewQuestionsQuestionIdRouteImport.update({
+    id: '/interview-questions_/$questionId',
+    path: '/interview-questions/$questionId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LearningPathsPathIdRoute = LearningPathsPathIdRouteImport.update({
+  id: '/learning-paths_/$pathId',
+  path: '/learning-paths/$pathId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SystemDesignProblemIdRoute = SystemDesignProblemIdRouteImport.update({
+  id: '/system-design_/$problemId',
+  path: '/system-design/$problemId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LearningPathsPathIdTopicIdRoute =
+  LearningPathsPathIdTopicIdRouteImport.update({
+    id: '/learning-paths_/$pathId_/$topicId',
+    path: '/learning-paths/$pathId/$topicId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/career-roadmap': typeof CareerRoadmapRoute
+  '/coding-arena': typeof CodingArenaRoute
+  '/interview-questions': typeof InterviewQuestionsRoute
+  '/interview-studio': typeof InterviewStudioRoute
+  '/learning-paths': typeof LearningPathsRoute
+  '/system-design': typeof SystemDesignRoute
+  '/welcome': typeof WelcomeRoute
+  '/workspace': typeof WorkspaceRoute
+  '/coding-arena/$challengeId': typeof CodingArenaChallengeIdRoute
+  '/interview-questions/$questionId': typeof InterviewQuestionsQuestionIdRoute
+  '/learning-paths/$pathId': typeof LearningPathsPathIdRoute
+  '/system-design/$problemId': typeof SystemDesignProblemIdRoute
+  '/learning-paths/$pathId/$topicId': typeof LearningPathsPathIdTopicIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/career-roadmap': typeof CareerRoadmapRoute
+  '/coding-arena': typeof CodingArenaRoute
+  '/interview-questions': typeof InterviewQuestionsRoute
+  '/interview-studio': typeof InterviewStudioRoute
+  '/learning-paths': typeof LearningPathsRoute
+  '/system-design': typeof SystemDesignRoute
+  '/welcome': typeof WelcomeRoute
+  '/workspace': typeof WorkspaceRoute
+  '/coding-arena/$challengeId': typeof CodingArenaChallengeIdRoute
+  '/interview-questions/$questionId': typeof InterviewQuestionsQuestionIdRoute
+  '/learning-paths/$pathId': typeof LearningPathsPathIdRoute
+  '/system-design/$problemId': typeof SystemDesignProblemIdRoute
+  '/learning-paths/$pathId/$topicId': typeof LearningPathsPathIdTopicIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/career-roadmap': typeof CareerRoadmapRoute
+  '/coding-arena': typeof CodingArenaRoute
+  '/interview-questions': typeof InterviewQuestionsRoute
+  '/interview-studio': typeof InterviewStudioRoute
+  '/learning-paths': typeof LearningPathsRoute
+  '/system-design': typeof SystemDesignRoute
+  '/welcome': typeof WelcomeRoute
+  '/workspace': typeof WorkspaceRoute
+  '/coding-arena_/$challengeId': typeof CodingArenaChallengeIdRoute
+  '/interview-questions_/$questionId': typeof InterviewQuestionsQuestionIdRoute
+  '/learning-paths_/$pathId': typeof LearningPathsPathIdRoute
+  '/system-design_/$problemId': typeof SystemDesignProblemIdRoute
+  '/learning-paths_/$pathId_/$topicId': typeof LearningPathsPathIdTopicIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/career-roadmap'
+    | '/coding-arena'
+    | '/interview-questions'
+    | '/interview-studio'
+    | '/learning-paths'
+    | '/system-design'
+    | '/welcome'
+    | '/workspace'
+    | '/coding-arena/$challengeId'
+    | '/interview-questions/$questionId'
+    | '/learning-paths/$pathId'
+    | '/system-design/$problemId'
+    | '/learning-paths/$pathId/$topicId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/career-roadmap'
+    | '/coding-arena'
+    | '/interview-questions'
+    | '/interview-studio'
+    | '/learning-paths'
+    | '/system-design'
+    | '/welcome'
+    | '/workspace'
+    | '/coding-arena/$challengeId'
+    | '/interview-questions/$questionId'
+    | '/learning-paths/$pathId'
+    | '/system-design/$problemId'
+    | '/learning-paths/$pathId/$topicId'
+  id:
+    | '__root__'
+    | '/'
+    | '/career-roadmap'
+    | '/coding-arena'
+    | '/interview-questions'
+    | '/interview-studio'
+    | '/learning-paths'
+    | '/system-design'
+    | '/welcome'
+    | '/workspace'
+    | '/coding-arena_/$challengeId'
+    | '/interview-questions_/$questionId'
+    | '/learning-paths_/$pathId'
+    | '/system-design_/$problemId'
+    | '/learning-paths_/$pathId_/$topicId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CareerRoadmapRoute: typeof CareerRoadmapRoute
+  CodingArenaRoute: typeof CodingArenaRoute
+  InterviewQuestionsRoute: typeof InterviewQuestionsRoute
+  InterviewStudioRoute: typeof InterviewStudioRoute
+  LearningPathsRoute: typeof LearningPathsRoute
+  SystemDesignRoute: typeof SystemDesignRoute
+  WelcomeRoute: typeof WelcomeRoute
+  WorkspaceRoute: typeof WorkspaceRoute
+  CodingArenaChallengeIdRoute: typeof CodingArenaChallengeIdRoute
+  InterviewQuestionsQuestionIdRoute: typeof InterviewQuestionsQuestionIdRoute
+  LearningPathsPathIdRoute: typeof LearningPathsPathIdRoute
+  SystemDesignProblemIdRoute: typeof SystemDesignProblemIdRoute
+  LearningPathsPathIdTopicIdRoute: typeof LearningPathsPathIdTopicIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +223,115 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/career-roadmap': {
+      id: '/career-roadmap'
+      path: '/career-roadmap'
+      fullPath: '/career-roadmap'
+      preLoaderRoute: typeof CareerRoadmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/coding-arena': {
+      id: '/coding-arena'
+      path: '/coding-arena'
+      fullPath: '/coding-arena'
+      preLoaderRoute: typeof CodingArenaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/interview-questions': {
+      id: '/interview-questions'
+      path: '/interview-questions'
+      fullPath: '/interview-questions'
+      preLoaderRoute: typeof InterviewQuestionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/interview-studio': {
+      id: '/interview-studio'
+      path: '/interview-studio'
+      fullPath: '/interview-studio'
+      preLoaderRoute: typeof InterviewStudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/learning-paths': {
+      id: '/learning-paths'
+      path: '/learning-paths'
+      fullPath: '/learning-paths'
+      preLoaderRoute: typeof LearningPathsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/system-design': {
+      id: '/system-design'
+      path: '/system-design'
+      fullPath: '/system-design'
+      preLoaderRoute: typeof SystemDesignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workspace': {
+      id: '/workspace'
+      path: '/workspace'
+      fullPath: '/workspace'
+      preLoaderRoute: typeof WorkspaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/coding-arena_/$challengeId': {
+      id: '/coding-arena_/$challengeId'
+      path: '/coding-arena/$challengeId'
+      fullPath: '/coding-arena/$challengeId'
+      preLoaderRoute: typeof CodingArenaChallengeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/interview-questions_/$questionId': {
+      id: '/interview-questions_/$questionId'
+      path: '/interview-questions/$questionId'
+      fullPath: '/interview-questions/$questionId'
+      preLoaderRoute: typeof InterviewQuestionsQuestionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/learning-paths_/$pathId': {
+      id: '/learning-paths_/$pathId'
+      path: '/learning-paths/$pathId'
+      fullPath: '/learning-paths/$pathId'
+      preLoaderRoute: typeof LearningPathsPathIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/system-design_/$problemId': {
+      id: '/system-design_/$problemId'
+      path: '/system-design/$problemId'
+      fullPath: '/system-design/$problemId'
+      preLoaderRoute: typeof SystemDesignProblemIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/learning-paths_/$pathId_/$topicId': {
+      id: '/learning-paths_/$pathId_/$topicId'
+      path: '/learning-paths/$pathId/$topicId'
+      fullPath: '/learning-paths/$pathId/$topicId'
+      preLoaderRoute: typeof LearningPathsPathIdTopicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CareerRoadmapRoute: CareerRoadmapRoute,
+  CodingArenaRoute: CodingArenaRoute,
+  InterviewQuestionsRoute: InterviewQuestionsRoute,
+  InterviewStudioRoute: InterviewStudioRoute,
+  LearningPathsRoute: LearningPathsRoute,
+  SystemDesignRoute: SystemDesignRoute,
+  WelcomeRoute: WelcomeRoute,
+  WorkspaceRoute: WorkspaceRoute,
+  CodingArenaChallengeIdRoute: CodingArenaChallengeIdRoute,
+  InterviewQuestionsQuestionIdRoute: InterviewQuestionsQuestionIdRoute,
+  LearningPathsPathIdRoute: LearningPathsPathIdRoute,
+  SystemDesignProblemIdRoute: SystemDesignProblemIdRoute,
+  LearningPathsPathIdTopicIdRoute: LearningPathsPathIdTopicIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
