@@ -33,3 +33,7 @@ use the editor.
 - Keep learning content in typed browser-safe data modules and page views in focused feature components; leaf routes own metadata and typed URLs.
 - Keep prototype progress, preferences, bookmarks and notes in one React context hydrated from localStorage after mount; no backend or fake authentication is used.
 - Use accessible shared UI primitives for actions and dialogs and semantic global CSS tokens for all visual styles.
+
+- Derive readiness only from saved topic assessment results, keep unassessed skills nullable, and calculate path progress from actual completed modules; this prevents sample activity being mistaken for evidence.
+- Keep code sample execution behind a replaceable runner interface using a disposable opaque-origin frame and worker with network restrictions and a hard timeout; submitted code must not access the workspace or block its main thread.
+- Keep concept-specific lessons, assessment banks, case studies and roadmap rules in focused browser-safe data modules; unpublished curriculum stays explicitly labelled as an outline rather than repeated filler.

@@ -14,11 +14,15 @@ import {
   FileText,
   Target,
   Code2,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useDev } from "@/lib/dev-store";
-import { questions, paths, companies, slugify } from "@/lib/dev-data";
+import { questions, paths, companies, challenges, designProblems, slugify } from "@/lib/dev-data";
+import { PreparationProfile } from "./preparation-profile";
+import { generateRoadmap } from "@/lib/devready/roadmap";
+import { dayKey } from "@/lib/devready/progress";
 import { PageHeader, Progress } from "./common";
 export function InterviewStudio() {
   const store = useDev();
@@ -232,152 +236,162 @@ export function InterviewStudio() {
     </>
   );
 }
-const roadmaps: Record<string, string[]> = {
-  "Frontend Developer": [
-    "Web foundations",
-    "JavaScript fluency",
-    "React essentials",
-    "Build and interview",
-  ],
-  "Mid-level Developer": [
-    "JavaScript internals",
-    "Reliable React patterns",
-    "Testing and performance",
-    "Production project and interviews",
-  ],
-  "Senior Frontend Engineer": [
-    "Deep JavaScript & TypeScript",
-    "React architecture & performance",
-    "Frontend system design",
-    "Engineering communication & interviews",
-  ],
-  "Tech Lead": [
-    "Architecture and boundaries",
-    "Reliability and delivery",
-    "Technical leadership",
-    "Design reviews and coaching",
-  ],
-  "Full-stack Developer": [
-    "HTTP and data modeling",
-    "Server and API foundations",
-    "Authentication and reliability",
-    "End-to-end product project",
-  ],
-};
 export function CareerRoadmap() {
-  const store = useDev();
-  const [role, setRole] = useState(store.target);
-  const [stack, setStack] = useState("React + TypeScript");
-  const [duration, setDuration] = useState("8 weeks");
-  const [generated, setGenerated] = useState({ role: store.target, stack, duration });
-  const steps = roadmaps[generated.role] ?? roadmaps["Senior Frontend Engineer"] ?? [];
+  const store = useDev(),
+    [weeks, setWeeks] = useState(Number(store.drafts["roadmap-weeks"] ?? 8)),
+    [created, setCreated] = useState(store.drafts["roadmap-created"] === "true");
+  useEffect(() => {
+    if (store.loaded) {
+      setWeeks(Number(store.drafts["roadmap-weeks"] ?? 8));
+      setCreated(store.drafts["roadmap-created"] === "true");
+    }
+  }, [store.loaded]);
+  const milestones = generateRoadmap(store.profile, store.target, store.results, weeks, dayKey());
+  const tasks = milestones.flatMap((m) => m.tasks.map((_, i) => `roadmap-${m.id}-${i}`)),
+    completed = tasks.filter((id) => store.checklist.includes(id)).length;
   return (
     <>
       <PageHeader
-        label="One deliberate step at a time"
+        label="A plan grounded in your goals"
         title="Your career roadmap"
-        description="Turn a big career goal into an achievable weekly plan. Choose a direction and make it yours."
+        description="Focus your limited time on the skills that matter for your next frontend role."
       />
-      <div className="filter-bar">
-        {[
-          { label: "Target role", value: role, set: setRole, items: Object.keys(roadmaps) },
-          {
-            label: "Technology stack",
-            value: stack,
-            set: setStack,
-            items: ["React + TypeScript", "Next.js + React", "JavaScript + Web APIs"],
-          },
-          {
-            label: "Preparation duration",
-            value: duration,
-            set: setDuration,
-            items: ["4 weeks", "8 weeks", "12 weeks"],
-          },
-        ].map((item) => (
-          <label key={item.label} className="text-[10px] text-muted-foreground">
-            {item.label}
-            <select
-              className="field mt-2"
-              value={item.value}
-              onChange={(e) => item.set(e.target.value)}
-            >
-              {item.items.map((v) => (
-                <option key={v}>{v}</option>
-              ))}
-            </select>
-          </label>
-        ))}
-        <Button
-          className="self-end"
-          onClick={() => {
-            setGenerated({ role, stack, duration });
-            store.setTarget(role);
-          }}
-        >
-          Create my roadmap
-          <ArrowRight />
-        </Button>
-      </div>
-      <div className="flex flex-wrap gap-3 my-8">
-        <span className="badge violet">{generated.role}</span>
-        <span className="badge">{generated.stack}</span>
-        <span className="badge">{generated.duration}</span>
-        <span className="badge cyan">Sample preparation plan</span>
-      </div>
       <div className="content-layout">
-        <div className="timeline">
-          {steps.map((step, i) => {
-            const weeks = Number.parseInt(generated.duration) / 4;
-            return (
-              <section className="milestone" key={step}>
-                <span className="eyebrow">
-                  Week {Math.floor(i * weeks) + 1}
-                  {weeks > 1 ? `–${Math.floor((i + 1) * weeks)}` : ""}
-                </span>
-                <h2>{step}</h2>
-                <p className="text-xs text-muted-foreground mb-4">
-                  Focus on understanding the mechanism and demonstrating it in a working interface.
-                </p>
-                {[
-                  `Study: ${step.toLowerCase()}`,
-                  `Practice ${i + 2} focused coding challenges`,
-                  `Build: ${["a searchable project list", "an accessible component library", "a data-heavy dashboard", "a portfolio case study"][i]}`,
-                  "Explain one technical trade-off aloud",
-                ].map((task, j) => (
+        <div>
+          <PreparationProfile detailed />
+          <div className="flex gap-4 items-end mt-6">
+            <label className="text-xs">
+              Maximum duration
+              <select
+                className="field mt-2"
+                aria-label="Preparation duration"
+                value={weeks}
+                onChange={(e) => {
+                  setWeeks(Number(e.target.value));
+                  store.saveDraft("roadmap-weeks", e.target.value);
+                  setCreated(false);
+                  store.saveDraft("roadmap-created", "false");
+                }}
+              >
+                {[4, 8, 12].map((v) => (
+                  <option key={v} value={v}>
+                    {v} weeks
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Button
+              onClick={() => {
+                setCreated(true);
+                store.saveDraft("roadmap-created", "true");
+              }}
+            >
+              Create my roadmap
+              <ArrowRight />
+            </Button>
+          </div>
+        </div>
+        <aside>
+          <h2 className="font-semibold mb-4">Your preparation focus</h2>
+          <p className="text-sm text-muted-foreground leading-7">
+            {store.target} · {store.experience}
+          </p>
+          <p className="text-xs text-muted-foreground leading-7 mt-4">
+            {store.profile.dailyMinutes} minutes per day. Weak areas and assessment results take
+            priority. Strong areas get less initial time.
+          </p>
+          {store.profile.companies && (
+            <p className="text-xs mt-4">Targets: {store.profile.companies}</p>
+          )}
+          <p className="text-xs text-muted-foreground mt-5 leading-6">
+            Structured rules, not AI. Company names record your targets; they do not imply verified
+            company-specific questions.
+          </p>
+        </aside>
+      </div>
+      {created && (
+        <>
+          <div className="section-heading">
+            <h2>Your weekly milestones</h2>
+            <span className="badge cyan">{milestones.length} weeks · rules-based</span>
+          </div>
+          <div className="flex justify-between text-xs mb-3">
+            <span>
+              {completed} of {tasks.length} tasks complete
+            </span>
+            <span>{Math.round((completed / Math.max(1, tasks.length)) * 100)}%</span>
+          </div>
+          <Progress value={(completed / Math.max(1, tasks.length)) * 100} />
+          <div className="timeline mt-8">
+            {milestones.map((m) => (
+              <section className="milestone" key={m.id}>
+                <span className="eyebrow">Week {m.week}</span>
+                <h2>{m.title}</h2>
+                <div className="flex flex-wrap gap-3 mb-5">
+                  <Button size="sm" variant="outline" asChild>
+                    <Link
+                      to="/learning-paths/$pathId/$topicId"
+                      params={{
+                        pathId: m.lesson.split("/")[0] ?? "javascript",
+                        topicId: m.lesson.split("/")[1] ?? "the-event-loop",
+                      }}
+                    >
+                      Study lesson
+                      <BookOpen size={14} />
+                    </Link>
+                  </Button>
+                  <Button size="sm" variant="outline" asChild>
+                    <Link to="/coding-arena/$challengeId" params={{ challengeId: m.challenge }}>
+                      Coding assignment
+                      <Code2 size={14} />
+                    </Link>
+                  </Button>
+                  <Button size="sm" variant="outline" asChild>
+                    <Link to="/interview-studio">
+                      Mock interview
+                      <Mic size={14} />
+                    </Link>
+                  </Button>
+                  <Button size="sm" variant="outline" asChild>
+                    <Link to="/workspace">
+                      Revision
+                      <Bookmark size={14} />
+                    </Link>
+                  </Button>
+                </div>
+                {m.tasks.map((task, i) => (
                   <label className="plan-row" key={task}>
                     <input
                       className="check-control"
                       type="checkbox"
-                      checked={store.checklist.includes(`roadmap-${generated.role}-${i}-${j}`)}
-                      onChange={() => store.toggleCheck(`roadmap-${generated.role}-${i}-${j}`)}
+                      checked={store.checklist.includes(`roadmap-${m.id}-${i}`)}
+                      onChange={() => store.toggleCheck(`roadmap-${m.id}-${i}`)}
                     />
                     <h3>{task}</h3>
                   </label>
                 ))}
+                <Button
+                  className="mt-4"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    const ids = m.tasks.map((_, i) => `roadmap-${m.id}-${i}`),
+                      all = ids.every((id) => store.checklist.includes(id));
+                    ids.forEach((id) => {
+                      if (store.checklist.includes(id) === all) store.toggleCheck(id);
+                    });
+                  }}
+                >
+                  <Check />
+                  {m.tasks.every((_, i) => store.checklist.includes(`roadmap-${m.id}-${i}`))
+                    ? "Milestone completed"
+                    : "Complete milestone"}
+                </Button>
               </section>
-            );
-          })}
-        </div>
-        <aside>
-          <h2 className="font-semibold mb-4">Your north star</h2>
-          <p className="text-xs text-muted-foreground leading-7">
-            Consistency over cramming. Aim for {store.goal} focused hours each week, including time
-            to build, reflect and explain.
-          </p>
-          <div className="callout">
-            <Target className="text-primary mb-3" size={20} />
-            <p className="text-xs leading-7">
-              A roadmap is a guide, not a deadline. Adjust the pace to your needs.
-            </p>
+            ))}
           </div>
-          <Button variant="outline" asChild>
-            <Link to="/learning-paths">
-              Explore learning paths
-              <ArrowRight />
-            </Link>
-          </Button>
-        </aside>
-      </div>
+        </>
+      )}
     </>
   );
 }
@@ -404,7 +418,14 @@ export function Workspace() {
         </Button>
       </PageHeader>
       <div className="tabs-row">
-        {["Saved content", "Personal notes", "Learning history", "Preparation goals"].map((t) => (
+        {[
+          "Saved content",
+          "Personal notes",
+          "Learning history",
+          "Difficult topics",
+          "Revision reminders",
+          "Preparation goals",
+        ].map((t) => (
           <Button
             key={t}
             variant="ghost"
@@ -451,6 +472,9 @@ export function Workspace() {
                 <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-7">
                   {n.body}
                 </p>
+                {n.linked && (
+                  <span className="badge cyan mt-4">Linked to {n.linked.replaceAll("-", " ")}</span>
+                )}
               </div>
             ))}
           </div>
@@ -462,22 +486,15 @@ export function Workspace() {
           </div>
         )
       ) : tab === "Preparation goals" ? (
-        <div className="max-w-xl">
-          <label className="block mb-6 text-xs">
-            Your target role
-            <input
-              className="field mt-2"
-              value={store.target}
-              onChange={(e) => store.setTarget(e.target.value)}
-            />
-          </label>
-          <label className="block text-xs">
+        <div className="max-w-3xl">
+          <PreparationProfile detailed />
+          <label className="block text-xs mt-6">
             Weekly learning goal (hours)
             <input
               type="number"
               min="1"
               max="40"
-              className="field mt-2"
+              className="field mt-2 max-w-xs"
               value={store.goal}
               onChange={(e) => store.setGoal(Math.min(40, Math.max(1, Number(e.target.value))))}
             />
@@ -491,13 +508,22 @@ export function Workspace() {
         </div>
       ) : (
         <div className="panel">
-          {(tab === "Learning history" ? store.completed : store.bookmarks).map((id) => {
+          {(tab === "Learning history"
+            ? store.recent
+            : tab === "Difficult topics"
+              ? store.difficult
+              : tab === "Revision reminders"
+                ? Object.keys(store.reminders).filter((id) => store.reminders[id])
+                : store.bookmarks
+          ).map((id) => {
             const [kind, slug] = id.split("/");
             const q = questions.find((q) => q.id === slug);
             const path = paths.find((p) => p.id === kind);
             const title =
               path?.modules.find((m) => slugify(m) === slug) ??
               q?.title ??
+              challenges.find((c) => kind === "practice" && c.id === slug)?.title ??
+              designProblems.find((p) => kind === "design" && slugify(p) === slug) ??
               slug?.replaceAll("-", " ") ??
               id;
             const content = (
@@ -507,7 +533,12 @@ export function Workspace() {
                 </span>
                 <div className="flex-1">
                   <h3 className="text-sm">{title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{path?.title ?? kind}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {path?.title ?? kind}
+                    {store.reminders[id] &&
+                      ` · Revision ${store.reminders[id]}${(store.reminders[id] ?? "") <= dayKey() ? " · Due" : ""}`}
+                    {store.difficult.includes(id) && " · Marked difficult"}
+                  </p>
                 </div>
                 <ArrowRight size={14} />
               </>
@@ -550,13 +581,25 @@ export function Workspace() {
               </div>
             );
           })}
-          {!(tab === "Learning history" ? store.completed : store.bookmarks).length && (
+          {!(
+            tab === "Learning history"
+              ? store.recent
+              : tab === "Difficult topics"
+                ? store.difficult
+                : tab === "Revision reminders"
+                  ? Object.keys(store.reminders).filter((id) => store.reminders[id])
+                  : store.bookmarks
+          ).length && (
             <div className="empty">
               <Bookmark className="mx-auto text-primary mb-4" />
               <h2 className="font-semibold text-foreground">
                 {tab === "Learning history"
                   ? "Your next lesson is waiting."
-                  : "Keep the ideas worth coming back to."}
+                  : tab === "Difficult topics"
+                    ? "No topics marked difficult."
+                    : tab === "Revision reminders"
+                      ? "No revision dates scheduled."
+                      : "Keep the ideas worth coming back to."}
               </h2>
               <p className="text-xs mt-2 mb-5">
                 {tab === "Learning history"

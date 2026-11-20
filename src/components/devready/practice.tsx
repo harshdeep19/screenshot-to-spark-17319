@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -14,6 +14,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { questions, challenges, designProblems, slugify } from "@/lib/dev-data";
 import { useDev } from "@/lib/dev-store";
+import { questionDetails } from "@/lib/devready/question-details";
+import { designCases } from "@/lib/devready/design-cases";
+import { ContentTools } from "./content-tools";
+import { runnerSpecs } from "@/lib/devready/challenge-tests";
+import { runSamples, type RunResult } from "@/lib/devready/code-runner";
 import { PageHeader, Difficulty, CodeBlock, ArchitectureDiagram } from "./common";
 export function QuestionsHub() {
   const store = useDev();
@@ -22,12 +27,19 @@ export function QuestionsHub() {
   const [difficulty, setDifficulty] = useState("All difficulties");
   const [status, setStatus] = useState("All questions");
   const [type, setType] = useState("All types");
+  const [experience, setExperience] = useState("All levels");
   const list = questions.filter(
     (q) =>
       q.title.toLowerCase().includes(query.toLowerCase()) &&
       (category === "All topics" || q.category === category) &&
       (difficulty === "All difficulties" || q.difficulty === difficulty) &&
       (type === "All types" || q.type === type) &&
+      (experience === "All levels" ||
+        (q.difficulty === "Hard"
+          ? "Senior engineer"
+          : q.difficulty === "Medium"
+            ? "Intermediate"
+            : "Beginner") === experience) &&
       (status === "All questions" ||
         (status === "Bookmarked"
           ? store.bookmarks.includes(`question/${q.id}`)
@@ -50,6 +62,16 @@ export function QuestionsHub() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+        <select
+          className="experience"
+          aria-label="Question experience level"
+          value={experience}
+          onChange={(e) => setExperience(e.target.value)}
+        >
+          {["All levels", "Beginner", "Intermediate", "Senior engineer"].map((v) => (
+            <option key={v}>{v}</option>
+          ))}
+        </select>
         {[
           {
             value: category,
@@ -152,6 +174,7 @@ export function QuestionsHub() {
                 setDifficulty("All difficulties");
                 setStatus("All questions");
                 setType("All types");
+                setExperience("All levels");
               }}
             >
               Clear filters
@@ -165,7 +188,13 @@ export function QuestionsHub() {
 export function QuestionDetail({ questionId }: { questionId: string }) {
   const question = questions.find((q) => q.id === questionId);
   const [tab, setTab] = useState("Explanation");
+  const [interview, setInterview] = useState(false),
+    [revealed, setRevealed] = useState(false),
+    [answer, setAnswer] = useState("");
   const store = useDev();
+  useEffect(() => {
+    if (store.loaded && question) store.visit(`question/${questionId}`);
+  }, [questionId, store.loaded]);
   if (!question) return <div className="empty">Question unavailable.</div>;
   const index = questions.indexOf(question);
   return (
@@ -188,117 +217,153 @@ export function QuestionDetail({ questionId }: { questionId: string }) {
           />
         </Button>
       </PageHeader>
-      <Difficulty value={question.difficulty} />
-      <div className="tabs-row">
-        {["Explanation", "Interview answer", "Senior discussion", "Follow-ups"].map((value) => (
-          <Button
-            key={value}
-            variant="ghost"
-            className={tab === value ? "selected" : ""}
-            onClick={() => setTab(value)}
-          >
-            {value}
-          </Button>
-        ))}
+      <div className="flex flex-wrap gap-3 items-center">
+        <Difficulty value={question.difficulty} />
+        <span className="badge">
+          {question.difficulty === "Hard"
+            ? "Senior engineer"
+            : question.difficulty === "Medium"
+              ? "Intermediate"
+              : "Beginner"}
+        </span>
+        <Button
+          variant={interview ? "secondary" : "outline"}
+          size="sm"
+          onClick={() => {
+            setInterview(!interview);
+            setRevealed(false);
+          }}
+        >
+          Interview Mode
+        </Button>
       </div>
-      <article className="article">
-        {tab === "Explanation" ? (
-          <>
-            <h2>Short answer</h2>
-            <p>{question.answer}</p>
-            <h2>Under the hood</h2>
-            <p>{question.explanation}</p>
-            <CodeBlock code={question.code} />
-            <h2>A real-world scenario</h2>
-            <p>
-              Imagine debugging an interface where several updates happen at once. Trace the
-              sequence of events, isolate what owns the data, and use the example above to verify
-              your assumptions before changing the implementation.
-            </p>
-            <h2>Common mistakes</h2>
-            <p>
-              Avoid confusing an observed result with a guarantee. Explain the conditions that make
-              your example correct, and consider cleanup and failure cases as well as the happy
-              path.
-            </p>
-          </>
-        ) : tab === "Interview answer" ? (
-          <div className="callout">
-            <h3 className="!mt-0">A concise response you can actually say</h3>
-            <p>{question.answer}</p>
-            <p className="!mt-4">
-              Follow with a small example, then discuss one production trade-off. Keep the
-              explanation grounded in behavior you can demonstrate.
-            </p>
-          </div>
-        ) : tab === "Senior discussion" ? (
-          <>
-            <h2>Reason about the boundaries</h2>
-            <p>{question.explanation}</p>
-            <h2>Make trade-offs explicit</h2>
-            <p>
-              Explain the resource costs, error modes and team-maintenance implications. Measure the
-              bottleneck before introducing complexity, and describe a test that validates your
-              chosen contract.
-            </p>
-          </>
-        ) : (
-          <>
-            <h2>Go one level deeper</h2>
-            {question.followups.map((q, i) => (
-              <div className="module-row" key={q}>
-                <span className="module-number">{i + 1}</span>
-                {q}
-              </div>
-            ))}
-            <h2>Related questions</h2>
-            {questions
-              .filter((q) => q.id !== questionId)
-              .slice(0, 3)
-              .map((q) => (
-                <Link
-                  className="module-row"
-                  key={q.id}
-                  to="/interview-questions/$questionId"
-                  params={{ questionId: q.id }}
-                >
-                  {q.title}
-                  <ArrowRight size={13} />
-                </Link>
-              ))}
-          </>
-        )}
-        <div className="flex flex-wrap gap-3 mt-9">
-          <Button
-            onClick={() => store.toggleComplete(`question/${questionId}`)}
-            variant={store.completed.includes(`question/${questionId}`) ? "secondary" : "default"}
-          >
-            <CheckCircle2 />
-            {store.completed.includes(`question/${questionId}`) ? "Learned" : "Mark as learned"}
+      {interview && (
+        <section className="content-tools">
+          <h2 className="font-semibold mb-3">Your interview answer</h2>
+          <textarea
+            className="field min-h-40"
+            aria-label="Answer before revealing solution"
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            placeholder="Explain the concept, a concrete example, and one trade-off…"
+          />
+          <Button className="mt-4" disabled={!answer.trim()} onClick={() => setRevealed(true)}>
+            Reveal and self-review
+            <Check />
           </Button>
-          {questions[index + 1] && (
-            <Button asChild variant="outline">
-              <Link
-                to="/interview-questions/$questionId"
-                params={{ questionId: questions[index + 1]?.id ?? "" }}
-              >
-                Next question
-                <ArrowRight />
-              </Link>
-            </Button>
+          {revealed && (
+            <p className="text-xs text-muted-foreground mt-3">
+              Compare clarity, correctness, examples and trade-offs with the explanation below. This
+              is self-review, not automatic evaluation.
+            </p>
           )}
-          {questions[index - 1] && (
-            <Button asChild variant="ghost">
-              <Link
-                to="/interview-questions/$questionId"
-                params={{ questionId: questions[index - 1]?.id ?? "" }}
+        </section>
+      )}
+      {(!interview || revealed) && (
+        <>
+          <div className="tabs-row">
+            {["Explanation", "Interview answer", "Senior discussion", "Follow-ups"].map((value) => (
+              <Button
+                key={value}
+                variant="ghost"
+                className={tab === value ? "selected" : ""}
+                onClick={() => setTab(value)}
               >
-                Previous question
-              </Link>
-            </Button>
-          )}
-        </div>
-      </article>
+                {value}
+              </Button>
+            ))}
+          </div>
+          <article className="article">
+            {tab === "Explanation" ? (
+              <>
+                <h2>Short answer</h2>
+                <p>{question.answer}</p>
+                <h2>Under the hood</h2>
+                <p>{question.explanation}</p>
+                <CodeBlock code={question.code} />
+                <h2>A real-world scenario</h2>
+                <p>{questionDetails[questionId]?.production}</p>
+                <h2>Common mistakes</h2>
+                <p>{questionDetails[questionId]?.mistakes}</p>
+              </>
+            ) : tab === "Interview answer" ? (
+              <div className="callout">
+                <h3 className="!mt-0">A concise response you can actually say</h3>
+                <p>{question.answer}</p>
+                <p className="!mt-4">
+                  Follow with a small example, then discuss one production trade-off. Keep the
+                  explanation grounded in behavior you can demonstrate.
+                </p>
+              </div>
+            ) : tab === "Senior discussion" ? (
+              <>
+                <h2>Reason about the boundaries</h2>
+                <p>{question.explanation}</p>
+                <h2>Make trade-offs explicit</h2>
+                <p>{questionDetails[questionId]?.senior}</p>
+              </>
+            ) : (
+              <>
+                <h2>Go one level deeper</h2>
+                {question.followups.map((q, i) => (
+                  <div className="module-row" key={q}>
+                    <span className="module-number">{i + 1}</span>
+                    {q}
+                  </div>
+                ))}
+                <h2>Related questions</h2>
+                {questions
+                  .filter((q) => q.id !== questionId && q.category === question.category)
+                  .slice(0, 3)
+                  .map((q) => (
+                    <Link
+                      className="module-row"
+                      key={q.id}
+                      to="/interview-questions/$questionId"
+                      params={{ questionId: q.id }}
+                    >
+                      {q.title}
+                      <ArrowRight size={13} />
+                    </Link>
+                  ))}
+              </>
+            )}
+            <div className="flex flex-wrap gap-3 mt-9">
+              <Button
+                onClick={() => store.toggleComplete(`question/${questionId}`)}
+                variant={
+                  store.completed.includes(`question/${questionId}`) ? "secondary" : "default"
+                }
+              >
+                <CheckCircle2 />
+                {store.completed.includes(`question/${questionId}`) ? "Learned" : "Mark as learned"}
+              </Button>
+              {questions[index + 1] && (
+                <Button asChild variant="outline">
+                  <Link
+                    to="/interview-questions/$questionId"
+                    params={{ questionId: questions[index + 1]?.id ?? "" }}
+                  >
+                    Next question
+                    <ArrowRight />
+                  </Link>
+                </Button>
+              )}
+              {questions[index - 1] && (
+                <Button asChild variant="ghost">
+                  <Link
+                    to="/interview-questions/$questionId"
+                    params={{ questionId: questions[index - 1]?.id ?? "" }}
+                  >
+                    Previous question
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </article>
+        </>
+      )}
+      <ContentTools key={questionId} id={`question/${questionId}`} title={question.title} />
     </>
   );
 }
@@ -312,7 +377,15 @@ export function CodingArena() {
         description="Small challenges. Real engineering skills. Practice the patterns behind reliable frontend code."
       />
       <div className="filter-bar">
-        {["All challenges", "JavaScript", "DSA Patterns", "React Machine Coding"].map((value) => (
+        {[
+          "All challenges",
+          "JavaScript",
+          "DSA Patterns",
+          "React Machine Coding",
+          "TypeScript",
+          "Frontend Utilities",
+          "DOM & Browser",
+        ].map((value) => (
           <Button
             key={value}
             variant={filter === value ? "secondary" : "ghost"}
@@ -349,43 +422,60 @@ export function CodingArena() {
           ))}
       </div>
       <p className="text-xs text-muted-foreground mt-7">
-        Sample-solution practice. This prototype does not execute arbitrary code.
+        JavaScript sample tests run in isolation for supported challenges. React and TypeScript
+        challenges are review-only.
       </p>
     </>
   );
 }
 export function ChallengeDetail({ challengeId }: { challengeId: string }) {
-  const challenge = challenges.find((c) => c.id === challengeId);
+  const store = useDev(),
+    challenge = challenges.find((c) => c.id === challengeId),
+    spec = runnerSpecs[challengeId];
   const [code, setCode] = useState(
-    "// Write your approach here\n\nfunction solution() {\n  // Your implementation\n}\n",
-  );
-  const [language, setLanguage] = useState("JavaScript");
-  const [output, setOutput] = useState(false);
-  const [hint, setHint] = useState(false);
-  const [solution, setSolution] = useState(false);
-  const store = useDev();
+      store.drafts[challengeId] ?? spec?.starter ?? "// Describe your implementation here\n",
+    ),
+    [language, setLanguage] = useState("JavaScript"),
+    [output, setOutput] = useState<RunResult | null>(null),
+    [busy, setBusy] = useState(false),
+    [hint, setHint] = useState(false),
+    [solution, setSolution] = useState(false);
+  useEffect(() => {
+    if (store.loaded) {
+      setCode(
+        store.drafts[challengeId] ?? spec?.starter ?? "// Describe your implementation here\n",
+      );
+      store.visit(`practice/${challengeId}`);
+    }
+  }, [challengeId, store.loaded]);
   if (!challenge) return <div className="empty">Challenge unavailable.</div>;
   return (
     <>
       <PageHeader
         label={`${challenge.category} · ~30 min`}
         title={challenge.title}
-        description="Think through the requirements, write your approach, and compare it with a reference solution."
+        description="Read the contract, test the edge cases, and explain your implementation."
       />
       <div className="editor-grid">
         <article className="article">
           <Difficulty value={challenge.difficulty} />
           <h2>Problem statement</h2>
           <p>{challenge.description}</p>
-          <h3>Example</h3>
+          <h3>Example input / output</h3>
           <CodeBlock code={challenge.example} language="Input / output" />
           <h3>Requirements & constraints</h3>
           <ul>
-            <li>Preserve the behavior described above.</li>
-            <li>Handle empty inputs and boundary values.</li>
-            <li>Do not use external libraries to replace the core implementation.</li>
+            {(
+              spec?.requirements ?? [
+                "Implement the described interaction with accessible controls.",
+                "Handle loading, empty and error states.",
+                "Preserve keyboard navigation and clean up external resources.",
+              ]
+            ).map((r) => (
+              <li key={r}>{r}</li>
+            ))}
           </ul>
-          <Button variant="outline" onClick={() => setHint((value) => !value)}>
+          <Button variant="outline" onClick={() => setHint(!hint)}>
             <Lightbulb />
             {hint ? "Hide hint" : "Need a hint?"}
           </Button>
@@ -394,21 +484,42 @@ export function ChallengeDetail({ challengeId }: { challengeId: string }) {
               <p>{challenge.hint}</p>
             </div>
           )}
-          <h3>Complexity discussion</h3>
+          <h3>Expected approach</h3>
+          <p>{challenge.hint}</p>
+          <h3>Complexity</h3>
           <p>{challenge.complexity}</p>
+          <h3>Alternative approach</h3>
+          <p>
+            {spec?.alternative ??
+              "Compare a minimal local-state implementation with a reusable controlled component. Explain the extra API complexity and accessibility responsibilities."}
+          </p>
+          {spec && (
+            <>
+              <h3>Sample test cases</h3>
+              {spec.tests.map((t) => (
+                <div key={t.name} className="mb-4">
+                  <strong className="text-xs">{t.name}</strong>
+                  <CodeBlock
+                    code={`${t.expression}\nExpected: ${JSON.stringify(t.expected)}`}
+                    language="Sample"
+                  />
+                </div>
+              ))}
+            </>
+          )}
         </article>
         <div>
           <div className="panel overflow-hidden">
             <div className="code-header">
-              <div className="flex items-center gap-2">
-                <Code2 size={14} />
-                <span>solution.{language === "TypeScript" ? "ts" : "js"}</span>
-              </div>
+              <span>solution.{language === "TypeScript" ? "ts" : "js"}</span>
               <select
-                className="experience"
                 aria-label="Code language"
+                className="experience"
                 value={language}
-                onChange={(e) => setLanguage(e.target.value)}
+                onChange={(e) => {
+                  setLanguage(e.target.value);
+                  setOutput(null);
+                }}
               >
                 <option>JavaScript</option>
                 <option>TypeScript</option>
@@ -421,33 +532,69 @@ export function ChallengeDetail({ challengeId }: { challengeId: string }) {
               value={code}
               onChange={(e) => {
                 setCode(e.target.value);
-                setOutput(false);
+                store.saveDraft(challengeId, e.target.value);
+                setOutput(null);
               }}
             />
-            <div className="flex items-center justify-between p-4 border-t border-border">
-              <span className="text-[10px] text-muted-foreground">Reference simulation only</span>
-              <Button size="sm" onClick={() => setOutput(true)}>
-                <Play size={12} />
-                Preview sample
+            <div className="flex flex-wrap gap-3 items-center justify-between p-4 border-t border-border">
+              <span className="text-[10px] text-muted-foreground">
+                {spec && language === "JavaScript"
+                  ? "Isolated sample tests · 3-second limit"
+                  : "Review-only · no code execution"}
+              </span>
+              <Button
+                size="sm"
+                disabled={busy || !spec || language !== "JavaScript"}
+                onClick={async () => {
+                  if (!spec) return;
+                  setBusy(true);
+                  const result = await runSamples(code, spec.tests);
+                  setOutput(result);
+                  setBusy(false);
+                  if (
+                    !result.error &&
+                    result.tests.length === spec.tests.length &&
+                    result.tests.every((t) => t.passed)
+                  )
+                    store.markSolved(challengeId);
+                }}
+              >
+                <Play size={13} />
+                {busy ? "Running…" : "Run sample tests"}
               </Button>
             </div>
-            <div className="output">
-              <div className="text-muted-foreground mb-2">OUTPUT</div>
+            <div className="output" aria-live="polite">
+              <div className="text-muted-foreground mb-3">TEST RESULTS</div>
               {output ? (
-                <>
-                  <span className="text-success">Reference example preview</span>
-                  <br />
-                  {challenge.example}
-                  <br />
-                  <span className="text-warning">Your code was not executed or graded.</span>
-                </>
+                output.error ? (
+                  <span className="text-warning">{output.error}</span>
+                ) : (
+                  <>
+                    {output.tests.map((t) => (
+                      <div className="test-result" key={t.name}>
+                        <span className={t.passed ? "text-success" : "text-warning"}>
+                          {t.passed ? "PASS" : "FAIL"} · {t.name}
+                        </span>
+                        <span>Actual: {t.actual}</span>
+                        <span className="text-muted-foreground">Expected: {t.expected}</span>
+                      </div>
+                    ))}
+                    <p className="text-muted-foreground mt-4">
+                      Samples are not exhaustive and do not prove correctness for every input.
+                    </p>
+                  </>
+                )
               ) : (
-                <span className="text-muted-foreground">Sample output will appear here.</span>
+                <span className="text-muted-foreground">
+                  {spec
+                    ? "Write your implementation and run the supported samples."
+                    : "No execution is available for this challenge. Compare your approach with the reference."}
+                </span>
               )}
             </div>
           </div>
           <div className="flex flex-wrap gap-3 mt-5">
-            <Button variant="outline" onClick={() => setSolution((value) => !value)}>
+            <Button variant="outline" onClick={() => setSolution(!solution)}>
               {solution ? "Hide reference" : "View reference solution"}
             </Button>
             <Button
@@ -457,15 +604,12 @@ export function ChallengeDetail({ challengeId }: { challengeId: string }) {
               <Check />
               {store.completed.includes(`practice/${challengeId}`) ? "Reviewed" : "Mark reviewed"}
             </Button>
+            {store.solved.includes(challengeId) && (
+              <span className="badge green">Sample tests passed</span>
+            )}
           </div>
-          {solution && (
-            <>
-              <CodeBlock code={challenge.solution} />
-              <p className="text-xs text-muted-foreground leading-7">
-                {challenge.hint} Complexity: {challenge.complexity}
-              </p>
-            </>
-          )}
+          {solution && <CodeBlock code={challenge.solution} />}
+          <ContentTools key={challengeId} id={`practice/${challengeId}`} title={challenge.title} />
         </div>
       </div>
     </>
@@ -505,15 +649,7 @@ export function SystemDesign() {
               <span className="badge">{i < 3 ? "Featured case" : "Guided framework"}</span>
             </div>
             <h2>{title}</h2>
-            <p>
-              {
-                [
-                  "Data-heavy interfaces, scoped caching and rendering boundaries.",
-                  "Product discovery, resilient checkout and fast experiences.",
-                  "Pagination, freshness and optimistic interactions.",
-                ][i % 3]
-              }
-            </p>
+            <p>{designCases[slugify(title)]?.scope}</p>
             <div className="flex justify-between text-xs text-muted-foreground mt-4">
               <span className="flex items-center gap-1">
                 <Clock size={12} />
@@ -528,22 +664,26 @@ export function SystemDesign() {
   );
 }
 export function DesignDetail({ problemId }: { problemId: string }) {
-  const title = designProblems.find((p) => slugify(p) === problemId);
-  const [tab, setTab] = useState("Requirements");
-  const store = useDev();
-  if (!title) return <div className="empty">Design problem unavailable.</div>;
+  const store = useDev(),
+    title = designProblems.find((p) => slugify(p) === problemId),
+    content = designCases[problemId],
+    [tab, setTab] = useState("Requirements");
+  useEffect(() => {
+    if (store.loaded && title) store.visit(`design/${problemId}`);
+  }, [problemId, store.loaded]);
+  if (!title || !content) return <div className="empty">Design problem unavailable.</div>;
   return (
     <>
       <PageHeader
-        label="Architecture case study"
+        label="Frontend system design studio"
         title={title}
-        description="Start with the constraints. Make the boundaries visible. Explain why your design works."
+        description="Clarify the requirements, trace the data, and defend a design for this specific system."
       />
       <div className="tabs-row">
         {["Requirements", "Architecture", "Data & caching", "Trade-offs"].map((t) => (
           <Button
-            key={t}
             variant="ghost"
+            key={t}
             className={tab === t ? "selected" : ""}
             onClick={() => setTab(t)}
           >
@@ -554,98 +694,71 @@ export function DesignDetail({ problemId }: { problemId: string }) {
       <article className="article">
         {tab === "Requirements" ? (
           <>
-            <h2>Clarify the scope first</h2>
-            <p>
-              Who uses this interface? Which workflows matter most? What is the expected data
-              volume, freshness and device mix? Clarify offline needs and whether multiple users
-              collaborate.
-            </p>
+            <h2>Requirements gathering</h2>
+            <p>{content.scope}</p>
             <h3>Functional requirements</h3>
             <ul>
-              <li>Display and filter domain data with shareable navigation state.</li>
-              <li>Support authenticated actions and user-scoped views.</li>
-              <li>Show loading, empty, partial and error states.</li>
-              <li>Update the interface after successful user actions.</li>
+              {content.functional.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
             </ul>
             <h3>Non-functional requirements</h3>
             <ul>
-              <li>Accessible keyboard and assistive-technology flows.</li>
-              <li>Responsive interactions on representative low-end devices.</li>
-              <li>Reliable recovery from unavailable or slow services.</li>
-              <li>Observable performance and failure metrics.</li>
+              {content.nonfunctional.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
             </ul>
           </>
         ) : tab === "Architecture" ? (
           <>
-            <h2>Component boundaries</h2>
-            <ArchitectureDiagram />
-            <p>
-              Use an application shell for identity and navigation. Feature views own workflow
-              state. A query layer owns remote-data lifetimes, while reusable UI primitives remain
-              independent of business logic.
-            </p>
-            <h3>Rendering strategy</h3>
-            <p>
-              Render public content on the server where it improves first paint and discovery. Keep
-              private, interactive workflows client-driven with an explicit loading boundary. Avoid
-              shipping large visualizations before they are needed.
-            </p>
+            <h2>Component architecture</h2>
+            <div className="system-flow">
+              {content.components.map((x, i) => (
+                <div key={x}>
+                  <span className="eyebrow">{String(i + 1).padStart(2, "0")}</span>
+                  <strong>{x}</strong>
+                  {i < content.components.length - 1 && <ArrowRight size={18} />}
+                </div>
+              ))}
+            </div>
+            <h3>Data flow</h3>
+            <p>{content.flow}</p>
+            <h3>State management</h3>
+            <p>{content.state}</p>
           </>
         ) : tab === "Data & caching" ? (
           <>
-            <h2>Follow the data</h2>
-            <p>
-              User intent updates URL or local UI state. Typed query keys identify the remote
-              resource. Successful mutations invalidate affected queries; optimistic changes have a
-              rollback path.
-            </p>
-            <CodeBlock
-              code={
-                "GET /projects?cursor=abc&status=active\nResponse: { items: Project[], nextCursor: string | null }\n\nPATCH /projects/:id\nBody: { name: string, version: number }"
-              }
-              language="API contract"
-            />
+            <h2>API integration</h2>
+            <CodeBlock code={content.api} language="API contract" />
             <h3>Caching strategy</h3>
-            <p>
-              Include user and tenant scope in cache keys. Set freshness based on the workflow, not
-              a global arbitrary timeout. Clear private caches at account changes. Prefer cursor
-              pagination for frequently changing datasets.
-            </p>
-            <h3>State management</h3>
-            <p>
-              Keep ephemeral input state close to the view. Put shareable filters in the URL. Avoid
-              copying server data into a second global store that can fall out of sync.
-            </p>
+            <p>{content.caching}</p>
+            <h3>Data flow</h3>
+            <p>{content.flow}</p>
           </>
         ) : (
           <>
-            <h2>Defend the decisions</h2>
-            <h3>Performance</h3>
-            <p>
-              Measure LCP and INP. Virtualize only when data volume warrants it, split heavy
-              bundles, and avoid layout thrashing during interactions.
-            </p>
+            <h2>Performance and scalability</h2>
+            <p>{content.performance}</p>
             <h3>Security</h3>
-            <p>
-              Authorization must be enforced on the server. Never trust hidden buttons as a
-              permission boundary. Escape untrusted content, scope cached data, and apply a content
-              security policy.
-            </p>
+            <p>{content.security}</p>
             <h3>Trade-offs</h3>
-            <p>
-              A BFF can simplify clients but introduces another deployment boundary. Optimistic
-              updates improve perceived speed but require conflict handling. Micro-frontends add
-              independent ownership at the cost of runtime and organizational complexity.
-            </p>
+            <p>{content.tradeoffs}</p>
+            <h3>Interview follow-ups</h3>
+            <ul>
+              {content.followups.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+            </ul>
           </>
         )}
         <div className="callout">
-          <h3 className="!mt-0">Your discussion prompt</h3>
+          <h3 className="!mt-0">Your design assignment</h3>
           <p>
-            What would you simplify for a small team, and what would you change at ten times the
-            traffic? Name the signal that tells you it is time to change.
+            Choose two measurable constraints, sketch the architecture, and describe one failure
+            path. Explain which assumption would make you change this design.
           </p>
         </div>
+        <ContentTools key={problemId} id={`design/${problemId}`} title={title} />
         <Button onClick={() => store.toggleComplete(`design/${problemId}`)}>
           <CheckCircle2 />
           {store.completed.includes(`design/${problemId}`)

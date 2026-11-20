@@ -1,3 +1,4 @@
+import { extraChallenges } from "./devready/extra-challenges";
 export type LearningPath = {
   id: string;
   title: string;
@@ -394,6 +395,7 @@ export type Challenge = {
   hint: string;
 };
 export const challenges: Challenge[] = [
+  ...extraChallenges,
   {
     id: "debounce",
     title: "Implement debounce",
@@ -457,7 +459,7 @@ export const challenges: Challenge[] = [
       "Implement on, off and emit. Support several listeners per event and return an unsubscribe function from on.",
     example: 'const off = emitter.on("save", console.log);\nemitter.emit("save", "done");\noff();',
     solution:
-      "function createEmitter() {\n  const events = new Map();\n  return {\n    on(event, fn) {\n      if (!events.has(event)) events.set(event, new Set());\n      events.get(event).add(fn);\n      return () => events.get(event)?.delete(fn);\n    },\n    emit(event, ...args) {\n      for (const fn of [...(events.get(event) ?? [])]) fn(...args);\n    }\n  };\n}",
+      "function createEmitter() {\n  const events = new Map();\n  return {\n    off(event, fn) { events.get(event)?.delete(fn); },\n    on(event, fn) {\n      if (!events.has(event)) events.set(event, new Set());\n      events.get(event).add(fn);\n      return () => events.get(event)?.delete(fn);\n    },\n    emit(event, ...args) {\n      for (const fn of [...(events.get(event) ?? [])]) fn(...args);\n    }\n  };\n}",
     complexity: "O(1) expected registration; O(n) emission for n listeners.",
     hint: "Use a Map from event name to Set of callbacks.",
   },
@@ -476,6 +478,11 @@ export const challenges: Challenge[] = [
   },
 ];
 export const designProblems = [
+  "Design an autocomplete component",
+  "Design a file upload system",
+  "Design an analytics platform",
+  "Design a real-time chat application",
+  "Design a frontend caching strategy",
   "Design a scalable dashboard",
   "Design an e-commerce frontend",
   "Design a social media feed",
@@ -515,8 +522,5 @@ export function pathProgress(path: LearningPath, completed: string[]) {
   const count = path.modules.filter((module) =>
     completed.includes(`${path.id}/${slugify(module)}`),
   ).length;
-  return Math.min(
-    100,
-    path.progress + Math.round((count / path.modules.length) * (100 - path.progress)),
-  );
+  return Math.min(100, path.modules.length ? Math.round((count / path.modules.length) * 100) : 0);
 }

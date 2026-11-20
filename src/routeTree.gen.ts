@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AssessmentsRouteImport } from './routes/assessments'
 import { Route as CareerRoadmapRouteImport } from './routes/career-roadmap'
 import { Route as CodingArenaRouteImport } from './routes/coding-arena'
 import { Route as InterviewQuestionsRouteImport } from './routes/interview-questions'
@@ -27,6 +28,11 @@ import { Route as LearningPathsPathIdTopicIdRouteImport } from './routes/learnin
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssessmentsRoute = AssessmentsRouteImport.update({
+  id: '/assessments',
+  path: '/assessments',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CareerRoadmapRoute = CareerRoadmapRouteImport.update({
@@ -99,6 +105,7 @@ const LearningPathsPathIdTopicIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assessments': typeof AssessmentsRoute
   '/career-roadmap': typeof CareerRoadmapRoute
   '/coding-arena': typeof CodingArenaRoute
   '/interview-questions': typeof InterviewQuestionsRoute
@@ -115,6 +122,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assessments': typeof AssessmentsRoute
   '/career-roadmap': typeof CareerRoadmapRoute
   '/coding-arena': typeof CodingArenaRoute
   '/interview-questions': typeof InterviewQuestionsRoute
@@ -132,6 +140,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/assessments': typeof AssessmentsRoute
   '/career-roadmap': typeof CareerRoadmapRoute
   '/coding-arena': typeof CodingArenaRoute
   '/interview-questions': typeof InterviewQuestionsRoute
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/assessments'
     | '/career-roadmap'
     | '/coding-arena'
     | '/interview-questions'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/assessments'
     | '/career-roadmap'
     | '/coding-arena'
     | '/interview-questions'
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/assessments'
     | '/career-roadmap'
     | '/coding-arena'
     | '/interview-questions'
@@ -199,6 +211,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssessmentsRoute: typeof AssessmentsRoute
   CareerRoadmapRoute: typeof CareerRoadmapRoute
   CodingArenaRoute: typeof CodingArenaRoute
   InterviewQuestionsRoute: typeof InterviewQuestionsRoute
@@ -221,6 +234,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assessments': {
+      id: '/assessments'
+      path: '/assessments'
+      fullPath: '/assessments'
+      preLoaderRoute: typeof AssessmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/career-roadmap': {
@@ -319,6 +339,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssessmentsRoute: AssessmentsRoute,
   CareerRoadmapRoute: CareerRoadmapRoute,
   CodingArenaRoute: CodingArenaRoute,
   InterviewQuestionsRoute: InterviewQuestionsRoute,

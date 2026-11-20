@@ -8,8 +8,8 @@ describe("Local learning rules", () => {
   it("completed modules increase only the relevant path progress", () => {
     const path = paths.find((p) => p.id === "javascript");
     if (!path) throw new Error("JavaScript path missing");
-    expect(pathProgress(path, ["javascript/scope-and-closures"])).toBe(66);
-    expect(pathProgress(path, ["react/hooks"])).toBe(64);
+    expect(pathProgress(path, ["javascript/scope-and-closures"])).toBe(6);
+    expect(pathProgress(path, ["react/hooks"])).toBe(0);
   });
   it("sample study paths include all seven subject areas", () => {
     expect(paths.map((p) => p.id)).toEqual([

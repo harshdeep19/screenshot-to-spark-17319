@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { PreparationProfile } from "./preparation-profile";
 import { useDev } from "@/lib/dev-store";
 import { paths, questions, challenges, designProblems, companies, slugify } from "@/lib/dev-data";
 const navigation = [
@@ -36,6 +37,7 @@ const navigation = [
   { to: "/system-design" as const, label: "Frontend System Design", icon: Network },
   { to: "/interview-studio" as const, label: "Interview Studio", icon: Mic },
   { to: "/career-roadmap" as const, label: "Career Roadmap", icon: Route },
+  { to: "/assessments" as const, label: "Skill Assessments", icon: Check },
   { to: "/workspace" as const, label: "My Workspace", icon: Folder },
 ];
 export function AppShell({ children }: { children: ReactNode }) {
@@ -192,9 +194,18 @@ export function AppShell({ children }: { children: ReactNode }) {
             className="sidebar-profile h-auto text-left px-0 w-[calc(100%-40px)] justify-start"
             onClick={() => setModal("profile")}
           >
-            <span className="avatar">AS</span>
+            <span className="avatar">
+              {store.profile.name
+                ? store.profile.name
+                    .split(" ")
+                    .map((s) => s[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase()
+                : "DR"}
+            </span>
             <span className="flex-1">
-              <strong className="block text-xs">Alex Smith</strong>
+              <strong className="block text-xs">{store.profile.name || "Your workspace"}</strong>
               <span className="block text-[10px] text-muted-foreground mt-1">
                 Personal workspace
               </span>
@@ -260,7 +271,16 @@ export function AppShell({ children }: { children: ReactNode }) {
               aria-label="Your profile"
               onClick={() => setModal("profile")}
             >
-              <span className="avatar">AS</span>
+              <span className="avatar">
+                {store.profile.name
+                  ? store.profile.name
+                      .split(" ")
+                      .map((s) => s[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()
+                  : "DR"}
+              </span>
             </Button>
           </div>
         </header>
@@ -410,25 +430,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </DialogDescription>
           {modal === "settings" || modal === "profile" ? (
             <div className="space-y-5 py-3">
-              <label className="block text-xs">
-                Target role
-                <input
-                  className="field mt-2"
-                  value={store.target}
-                  onChange={(e) => store.setTarget(e.target.value)}
-                />
-              </label>
-              <label className="block text-xs">
-                Weekly learning goal (hours)
-                <input
-                  className="field mt-2"
-                  type="number"
-                  min="1"
-                  max="40"
-                  value={store.goal}
-                  onChange={(e) => store.setGoal(Math.min(40, Math.max(1, Number(e.target.value))))}
-                />
-              </label>
+              <PreparationProfile />
               <div className="flex justify-between items-center text-xs">
                 <span>Color theme</span>
                 <Button
