@@ -6,8 +6,11 @@
 
 ## Experience upgrade
 - [x] Inspect the existing experience and identify gaps against the upgrade brief.
-- [ ] Upgrade the dashboard with real activity, resume learning, preparation goals and assessed/unassessed skills.
-- [ ] Improve learning paths and replace repeated lesson filler with concept-specific lessons, exercises and assessments.
-- [ ] Upgrade interview practice, coding exercises and system design without removing existing features.
-- [ ] Add rules-based weekly roadmaps, topic assessments and a unified revision centre.
-- [ ] Verify new flows, existing progress, navigation and desktop/mobile layouts.
+- [x] Upgrade the dashboard with real activity, resume learning, preparation goals and assessed/unassessed skills.
+- [x] Publish the initial concept-specific lesson batch, exercises, linked notes and explicit curriculum outlines for remaining modules.
+- [x] Add answer-first interview mode, topic-specific discussion, seven supported coding runners and fourteen distinct system design cases.
+- [x] Add saved rules-based weekly roadmaps, six topic assessments and a unified revision centre.
+- [x] Verify new flows, preserved history, sample grading and isolation, reload persistence, navigation and desktop/tablet/mobile layouts.
+
+## Subsequent content batches (outside this initial incremental release)
+Remaining curriculum outlines need full authored lessons. The interview collection remains curated rather than comprehensive; further coding exercises, TypeScript execution and React live previews are not implemented. Cloud sync and AI evaluation remain future capabilities. This upgrade has not been republished.

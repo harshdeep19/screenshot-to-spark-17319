@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { QuestionDetail } from "@/components/devready/practice";
-import { pageHead } from "@/lib/dev-data";
+import { questions, pageHead } from "@/lib/dev-data";
 export const Route = createFileRoute("/interview-questions_/$questionId")({
-  head: () =>
-    pageHead(
-      "Interview Deep Dive",
-      "Understand a frontend interview question, its mechanics and follow-up discussion.",
-    ),
+  head: ({ params }) => {
+    const q = questions.find((q) => q.id === params.questionId);
+    return pageHead(
+      q?.title ?? "Interview Deep Dive",
+      q?.answer ?? "Practice detailed frontend interview explanations.",
+    );
+  },
   component: Page,
 });
 function Page() {

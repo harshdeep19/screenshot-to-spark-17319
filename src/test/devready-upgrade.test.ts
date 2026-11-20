@@ -78,4 +78,9 @@ describe("Evidence-based preparation", () => {
     ).toBe(true);
     expect(gradeSamples(spec.tests, [[], [], []]).some((t) => t.passed)).toBe(false);
   });
+  it("milestone IDs stay stable across study days for the same plan", () => {
+    const before = generateRoadmap(defaultProfile, "Senior Frontend Engineer", [], 8, "2026-11-20");
+    const after = generateRoadmap(defaultProfile, "Senior Frontend Engineer", [], 8, "2026-11-21");
+    expect(before.map(m => m.id)).toEqual(after.map(m => m.id));
+  });
 });

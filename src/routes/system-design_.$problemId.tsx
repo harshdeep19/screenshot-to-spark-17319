@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DesignDetail } from "@/components/devready/practice";
-import { pageHead } from "@/lib/dev-data";
+import { designProblems, slugify, pageHead } from "@/lib/dev-data";
 export const Route = createFileRoute("/system-design_/$problemId")({
-  head: () =>
-    pageHead(
-      "Architecture Case Study",
-      "Explore requirements, architecture, data flow, caching and security decisions.",
-    ),
+  head: ({ params }) => {
+    const title = designProblems.find((p) => slugify(p) === params.problemId);
+    return pageHead(
+      title ?? "Architecture Case Study",
+      `Explore requirements, data flow, security and trade-offs for ${title?.toLowerCase() ?? "frontend systems"}.`,
+    );
+  },
   component: Page,
 });
 function Page() {

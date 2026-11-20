@@ -180,6 +180,8 @@ export function Lesson({ pathId, topicId }: { pathId: string; topicId: string })
   const [quiz, setQuiz] = useState<Record<number, number>>({}),
     [checked, setChecked] = useState(false);
   useEffect(() => {
+    setQuiz({});
+    setChecked(false);
     if (store.loaded && title) store.visit(id, true);
   }, [id, store.loaded]);
   const content = lessons[id];

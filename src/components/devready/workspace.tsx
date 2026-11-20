@@ -509,7 +509,7 @@ export function Workspace() {
       ) : (
         <div className="panel">
           {(tab === "Learning history"
-            ? store.recent
+            ? [...new Set([...store.recent, ...store.completed])]
             : tab === "Difficult topics"
               ? store.difficult
               : tab === "Revision reminders"
@@ -583,7 +583,7 @@ export function Workspace() {
           })}
           {!(
             tab === "Learning history"
-              ? store.recent
+              ? [...new Set([...store.recent, ...store.completed])]
               : tab === "Difficult topics"
                 ? store.difficult
                 : tab === "Revision reminders"

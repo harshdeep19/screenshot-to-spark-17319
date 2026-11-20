@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bookmark, FileText, Flag, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDev } from "@/lib/dev-store";
@@ -7,6 +7,9 @@ export function ContentTools({ id, title }: { id: string; title: string }) {
     existing = store.notes.find((n) => n.linked === id),
     [body, setBody] = useState(existing?.body ?? ""),
     [saved, setSaved] = useState(false);
+  useEffect(() => {
+    setBody(existing?.body ?? "");
+  }, [store.loaded, existing?.id]);
   return (
     <section className="content-tools">
       <div className="flex flex-wrap gap-2 mb-5">
