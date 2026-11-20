@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useContext, useEffect, useState, type ReactNode } from "react";
+import { refreshContext, type RefreshContextCache } from "./devready/refresh-context";
 import { toggleItem } from "./dev-data";
 import {
   defaultProfile,
@@ -66,7 +67,9 @@ type Store = State & {
   saveDraft: (id: string, code: string) => void;
   markSolved: (id: string) => void;
 };
-const Context = createContext<Store | null>(null);
+const Context = refreshContext<Store>(
+  import.meta.hot ? (import.meta.hot.data as RefreshContextCache<Store>) : undefined,
+);
 export function DevProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(initial),
     [loaded, setLoaded] = useState(false);

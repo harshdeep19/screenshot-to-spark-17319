@@ -37,3 +37,4 @@ use the editor.
 - Derive readiness only from saved topic assessment results, keep unassessed skills nullable, and calculate path progress from actual completed modules; this prevents sample activity being mistaken for evidence.
 - Keep code sample execution behind a replaceable runner interface using a disposable opaque-origin frame and worker with network restrictions and a hard timeout; submitted code must not access the workspace or block its main thread.
 - Keep concept-specific lessons, assessment banks, case studies and roadmap rules in focused browser-safe data modules; unpublished curriculum stays explicitly labelled as an outline rather than repeated filler.
+- Preserve workspace context identity in Vite's per-module hot data during preview updates, never in a global user-state cache; refreshed consumers must keep reading the mounted provider without sharing SSR request data.
