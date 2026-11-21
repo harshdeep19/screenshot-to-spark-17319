@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { PreparationProfile } from "./preparation-profile";
 import { useDev } from "@/lib/dev-store";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { paths, questions, challenges, designProblems, companies, slugify } from "@/lib/dev-data";
 const navigation = [
   { to: "/" as const, label: "Overview", icon: LayoutDashboard },
@@ -42,6 +43,7 @@ const navigation = [
 ];
 export function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation();
+  const isMobile = useIsMobile();
   const store = useDev();
   const [collapsed, setCollapsed] = useState(false);
   const [mobile, setMobile] = useState(false);
@@ -103,124 +105,179 @@ export function AppShell({ children }: { children: ReactNode }) {
     .filter((item) => item.label.toLowerCase().includes(query.toLowerCase()))
     .slice(0, 12);
   if (location.pathname === "/welcome") return <>{children}</>;
-  return (
-    <div className={`app-shell ${collapsed ? "collapsed" : ""} ${mobile ? "mobile-open" : ""}`}>
-      <aside className="sidebar">
-        <Link to="/" className="brand">
-          <span className="brand-mark">
-            <Code2 size={21} />
-          </span>
-          <span className="brand-name">
-            DevReady<span className="brand-dot">.</span>
-          </span>
-        </Link>
-        <div className="nav-label">Your learning space</div>
-        <nav aria-label="Main navigation">
-          {navigation.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              title={item.label}
-              className={`nav-item ${location.pathname === item.to || (item.to !== "/" && location.pathname.startsWith(item.to)) ? "active" : ""}`}
-            >
-              <item.icon />
-              <span>{item.label}</span>
-              {item.to === "/coding-arena" && <span className="badge violet">NEW</span>}
-            </Link>
-          ))}
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="upgrade-box">
-            <div className="flex gap-2 items-center text-xs font-semibold">
-              <Sparkles size={15} />
-              Go deeper with Pro
-            </div>
-            <p>
-              More challenges. Deeper learning.
-              <br />
-              Your next level starts here.
-            </p>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="w-full justify-between"
-              onClick={() => setModal("plans")}
-            >
-              Explore Pro
-              <ArrowUpRight size={12} />
-            </Button>
+  const sidebar = (
+    <aside className="sidebar">
+      <Link to="/" className="brand">
+        <span className="brand-mark">
+          <Code2 size={21} />
+        </span>
+        <span className="brand-name">
+          DevReady<span className="brand-dot">.</span>
+        </span>
+      </Link>
+      <nav aria-label="Main navigation">
+        {[
+          { label: "Learning", destinations: ["/", "/learning-paths"] },
+          { label: "Practice", destinations: ["/coding-arena", "/system-design"] },
+          { label: "Assessment", destinations: ["/assessments"] },
+          {
+            label: "Interview preparation",
+            destinations: ["/interview-questions", "/interview-studio", "/career-roadmap"],
+          },
+          { label: "Workspace", destinations: ["/workspace"] },
+        ].map((group) => (
+          <div key={group.label}>
+            <div className="nav-label">{group.label}</div>
+            {navigation
+              .filter((item) => group.destinations.includes(item.to))
+              .map((item) => {
+                const active =
+                  location.pathname === item.to ||
+                  (item.to !== "/" && location.pathname.startsWith(item.to));
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    title={item.label}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setMobile(false)}
+                    className={`nav-item ${active ? "active" : ""}`}
+                  >
+                    <item.icon />
+                    <span>{item.label}</span>
+                    {item.to === "/coding-arena" && <span className="badge violet">NEW</span>}
+                  </Link>
+                );
+              })}
           </div>
-          <Button
-            variant="ghost"
-            className="nav-item w-[calc(100%-26px)] justify-start"
-            onClick={() => setModal("settings")}
-          >
-            <Settings />
-            <span>Settings</span>
-          </Button>
-          <Button
-            variant="ghost"
-            className="nav-item w-[calc(100%-26px)] justify-start"
-            onClick={() => setModal("help")}
-          >
-            <CircleHelp />
-            <span>Help & feedback</span>
-          </Button>
-          <div className="flex items-center justify-between px-6 text-muted-foreground">
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Collapse sidebar"
-              aria-label="Collapse sidebar"
-              onClick={() => {
-                setCollapsed((value) => !value);
-                setMobile(false);
-              }}
-            >
-              <PanelLeftClose />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Switch color theme"
-              aria-label="Switch color theme"
-              onClick={() => store.setTheme(store.theme === "dark" ? "light" : "dark")}
-            >
-              {store.theme === "dark" ? <Sun /> : <Moon />}
-            </Button>
+        ))}
+      </nav>
+      <div className="sidebar-bottom">
+        <div className="upgrade-box">
+          <div className="flex gap-2 items-center text-xs font-semibold">
+            <Sparkles size={15} />
+            Go deeper with Pro
           </div>
+          <p>
+            More challenges. Deeper learning.
+            <br />
+            Your next level starts here.
+          </p>
           <Button
-            variant="ghost"
-            className="sidebar-profile h-auto text-left px-0 w-[calc(100%-40px)] justify-start"
-            onClick={() => setModal("profile")}
+            variant="secondary"
+            size="sm"
+            className="w-full justify-between"
+            onClick={() => {
+              setMobile(false);
+              setModal("plans");
+            }}
           >
-            <span className="avatar">
-              {store.profile.name
-                ? store.profile.name
-                    .split(" ")
-                    .map((s) => s[0])
-                    .join("")
-                    .slice(0, 2)
-                    .toUpperCase()
-                : "DR"}
-            </span>
-            <span className="flex-1">
-              <strong className="block text-xs">{store.profile.name || "Your workspace"}</strong>
-              <span className="block text-[10px] text-muted-foreground mt-1">
-                Personal workspace
-              </span>
-            </span>
-            <ChevronsUpDown size={13} />
+            Explore Pro
+            <ArrowUpRight size={12} />
           </Button>
         </div>
-      </aside>
+        <Button
+          variant="ghost"
+          className="nav-item w-[calc(100%-26px)] justify-start"
+          onClick={() => {
+            setMobile(false);
+            setModal("settings");
+          }}
+        >
+          <Settings />
+          <span>Settings</span>
+        </Button>
+        <Button
+          variant="ghost"
+          className="nav-item w-[calc(100%-26px)] justify-start"
+          onClick={() => {
+            setMobile(false);
+            setModal("help");
+          }}
+        >
+          <CircleHelp />
+          <span>Help & feedback</span>
+        </Button>
+        <div className="flex items-center justify-between px-6 text-muted-foreground">
+          <Button
+            variant="ghost"
+            size="icon"
+            title="Collapse sidebar"
+            aria-label="Collapse sidebar"
+            onClick={() => {
+              setCollapsed((value) => !value);
+              setMobile(false);
+            }}
+          >
+            <PanelLeftClose />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            title="Switch color theme"
+            aria-label="Switch color theme"
+            onClick={() => store.setTheme(store.theme === "dark" ? "light" : "dark")}
+          >
+            {store.theme === "dark" ? <Sun /> : <Moon />}
+          </Button>
+        </div>
+        <Button
+          variant="ghost"
+          className="sidebar-profile h-auto text-left px-0 w-[calc(100%-40px)] justify-start"
+          onClick={() => {
+            setMobile(false);
+            setModal("profile");
+          }}
+        >
+          <span className="avatar">
+            {store.profile.name
+              ? store.profile.name
+                  .split(" ")
+                  .map((s) => s[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase()
+              : "DR"}
+          </span>
+          <span className="flex-1">
+            <strong className="block text-xs">{store.profile.name || "Your workspace"}</strong>
+            <span className="block text-[10px] text-muted-foreground mt-1">Personal workspace</span>
+          </span>
+          <ChevronsUpDown size={13} />
+        </Button>
+      </div>
+    </aside>
+  );
+  return (
+    <div className={`app-shell ${collapsed ? "collapsed" : ""} ${mobile ? "mobile-open" : ""}`}>
+      {!isMobile && sidebar}
+      <Dialog open={isMobile && mobile} onOpenChange={setMobile}>
+        <DialogContent
+          className="mobile-navigation translate-x-0 translate-y-0"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            document.getElementById("navigation-toggle")?.focus();
+          }}
+        >
+          <DialogTitle className="sr-only">DevReady navigation</DialogTitle>
+          <DialogDescription className="sr-only">
+            Learning, practice, assessment, interview preparation and workspace.
+          </DialogDescription>
+          {sidebar}
+        </DialogContent>
+      </Dialog>
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
       <div className="main-shell">
         <header className="topbar">
           <Button
             variant="ghost"
             size="icon"
             className="mobile-menu"
+            id="navigation-toggle"
             aria-label="Open navigation"
+            aria-expanded={mobile}
             onClick={() => setMobile((value) => !value)}
           >
             <Menu />
@@ -284,7 +341,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Button>
           </div>
         </header>
-        <main className="page">
+        <main id="main-content" className="page" tabIndex={-1}>
           {location.pathname !== "/" && (
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-6">
               <Link to="/">Workspace</Link>

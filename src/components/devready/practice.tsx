@@ -456,7 +456,7 @@ export function ChallengeDetail({ challengeId }: { challengeId: string }) {
         title={challenge.title}
         description="Read the contract, test the edge cases, and explain your implementation."
       />
-      <div className="editor-grid">
+      <div className="editor-grid coding-workspace">
         <article className="article">
           <Difficulty value={challenge.difficulty} />
           <h2>Problem statement</h2>
@@ -509,7 +509,7 @@ export function ChallengeDetail({ challengeId }: { challengeId: string }) {
           )}
         </article>
         <div>
-          <div className="panel overflow-hidden">
+          <div className="panel code-editor" aria-busy={busy}>
             <div className="code-header">
               <span>solution.{language === "TypeScript" ? "ts" : "js"}</span>
               <select
@@ -536,7 +536,7 @@ export function ChallengeDetail({ challengeId }: { challengeId: string }) {
                 setOutput(null);
               }}
             />
-            <div className="flex flex-wrap gap-3 items-center justify-between p-4 border-t border-border">
+            <div className="runner-toolbar">
               <span className="text-[10px] text-muted-foreground">
                 {spec && language === "JavaScript"
                   ? "Isolated sample tests · 3-second limit"
@@ -563,36 +563,52 @@ export function ChallengeDetail({ challengeId }: { challengeId: string }) {
                 {busy ? "Running…" : "Run sample tests"}
               </Button>
             </div>
-            <div className="output" aria-live="polite">
-              <div className="text-muted-foreground mb-3">TEST RESULTS</div>
-              {output ? (
-                output.error ? (
-                  <span className="text-warning">{output.error}</span>
-                ) : (
-                  <>
-                    {output.tests.map((t) => (
-                      <div className="test-result" key={t.name}>
-                        <span className={t.passed ? "text-success" : "text-warning"}>
-                          {t.passed ? "PASS" : "FAIL"} · {t.name}
-                        </span>
-                        <span>Actual: {t.actual}</span>
-                        <span className="text-muted-foreground">Expected: {t.expected}</span>
-                      </div>
-                    ))}
-                    <p className="text-muted-foreground mt-4">
-                      Samples are not exhaustive and do not prove correctness for every input.
-                    </p>
-                  </>
-                )
-              ) : (
-                <span className="text-muted-foreground">
-                  {spec
-                    ? "Write your implementation and run the supported samples."
-                    : "No execution is available for this challenge. Compare your approach with the reference."}
+          </div>
+          <section className="output test-output" aria-live="polite" aria-label="Test results">
+            <div className="test-output-heading">
+              <h2>Test results</h2>
+              {output && !output.error && (
+                <span
+                  className={`badge ${output.tests.every((t) => t.passed) ? "green" : "amber"}`}
+                >
+                  {output.tests.filter((t) => t.passed).length} / {output.tests.length} passed
                 </span>
               )}
             </div>
-          </div>
+            {busy ? (
+              <span className="text-cyan" role="status">
+                Running isolated sample tests…
+              </span>
+            ) : output ? (
+              output.error ? (
+                <span className="text-warning">{output.error}</span>
+              ) : (
+                <>
+                  {output.tests.map((t) => (
+                    <div
+                      className={`test-result ${t.passed ? "test-passed" : "test-failed"}`}
+                      key={t.name}
+                    >
+                      <span className={t.passed ? "text-success" : "text-warning"}>
+                        {t.passed ? "PASS" : "FAIL"} · {t.name}
+                      </span>
+                      <span>Actual: {t.actual}</span>
+                      <span className="text-muted-foreground">Expected: {t.expected}</span>
+                    </div>
+                  ))}
+                  <p className="text-muted-foreground mt-4">
+                    Samples are not exhaustive and do not prove correctness for every input.
+                  </p>
+                </>
+              )
+            ) : (
+              <span className="text-muted-foreground">
+                {spec
+                  ? "Write your implementation and run the supported samples."
+                  : "No execution is available for this challenge. Compare your approach with the reference."}
+              </span>
+            )}
+          </section>
           <div className="flex flex-wrap gap-3 mt-5">
             <Button variant="outline" onClick={() => setSolution(!solution)}>
               {solution ? "Hide reference" : "View reference solution"}
@@ -608,7 +624,15 @@ export function ChallengeDetail({ challengeId }: { challengeId: string }) {
               <span className="badge green">Sample tests passed</span>
             )}
           </div>
-          {solution && <CodeBlock code={challenge.solution} />}
+          {solution && (
+            <section className="reference-solution" aria-label="Reference solution">
+              <h2 className="text-lg font-semibold">Reference solution</h2>
+              <CodeBlock code={challenge.solution} />
+              <h3 className="font-semibold">Approach & complexity</h3>
+              <p className="text-sm text-muted-foreground leading-7 mt-2">{challenge.hint}</p>
+              <p className="text-sm text-muted-foreground leading-7">{challenge.complexity}</p>
+            </section>
+          )}
           <ContentTools key={challengeId} id={`practice/${challengeId}`} title={challenge.title} />
         </div>
       </div>

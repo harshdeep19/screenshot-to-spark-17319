@@ -24,7 +24,7 @@ export function PageHeader({
 }) {
   return (
     <div className="welcome-row">
-      <div>
+      <div className="min-w-0">
         {label && <div className="eyebrow mb-3">{label}</div>}
         <h1 className="page-title">{title}</h1>
         <p className="page-subtitle">{description}</p>

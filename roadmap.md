@@ -12,5 +12,11 @@
 - [x] Add saved rules-based weekly roadmaps, six topic assessments and a unified revision centre.
 - [x] Verify new flows, preserved history, sample grading and isolation, reload persistence, navigation and desktop/tablet/mobile layouts.
 
+## Premium UI/UX refinement
+- [x] Refine shared typography, spacing, focus states and responsive layouts without changing identity.
+- [x] Group navigation and improve mobile dismissal; add section-level lesson reading navigation.
+- [x] Polish dashboard hierarchy, coding results, assessments and welcome presentation.
+- [x] Run existing tests and verify real learning/practice flows on desktop, tablet and mobile.
+
 ## Subsequent content batches (outside this initial incremental release)
 Remaining curriculum outlines need full authored lessons. The interview collection remains curated rather than comprehensive; further coding exercises, TypeScript execution and React live previews are not implemented. Cloud sync and AI evaluation remain future capabilities. This upgrade has not been republished.

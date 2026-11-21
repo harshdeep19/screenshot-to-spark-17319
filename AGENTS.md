@@ -38,3 +38,6 @@ use the editor.
 - Keep code sample execution behind a replaceable runner interface using a disposable opaque-origin frame and worker with network restrictions and a hard timeout; submitted code must not access the workspace or block its main thread.
 - Keep concept-specific lessons, assessment banks, case studies and roadmap rules in focused browser-safe data modules; unpublished curriculum stays explicitly labelled as an outline rather than repeated filler.
 - Preserve workspace context identity in Vite's per-module hot data during preview updates, never in a global user-state cache; refreshed consumers must keep reading the mounted provider without sharing SSR request data.
+
+- Keep lesson reading position ephemeral and separate from saved completion; shared reading navigation derives sections from the rendered lesson without duplicating curriculum.
+- Use the shared modal primitive for mobile navigation so focus trapping, Escape dismissal and background scroll locking remain accessible.

@@ -28,9 +28,24 @@ export function Assessments() {
             <Difficulty value={active.level} />
             <span className="badge cyan">{active.skill}</span>
           </div>
-          <h2 className="text-xl font-semibold mb-4">{active.title}</h2>
+          <div className="assessment-heading">
+            <h2 className="text-xl font-semibold">{active.title}</h2>
+            <span className="text-sm text-muted-foreground" aria-live="polite">
+              {active.checks.filter((_, i) => answers[i] !== undefined).length} of{" "}
+              {active.checks.length} answered
+            </span>
+          </div>
+          {!submitted && (
+            <Progress
+              value={
+                (active.checks.filter((_, i) => answers[i] !== undefined).length /
+                  active.checks.length) *
+                100
+              }
+            />
+          )}
           {result && (
-            <section className="assessment-summary mb-7" aria-live="polite">
+            <section className="assessment-summary mb-7" role="status" aria-live="polite">
               <div>
                 <div className="eyebrow">ASSESSMENT RESULT</div>
                 <strong className="text-4xl block mt-3">{result.score}%</strong>
@@ -77,11 +92,15 @@ export function Assessments() {
               </div>
             </section>
           )}
-          <article className="article max-w-3xl">
+          <article className="article assessment-questions">
             {active.checks.map((c, i) => (
-              <div className="mb-8" key={c.question}>
+              <section
+                className="assessment-question"
+                aria-labelledby={`assessment-question-${i}`}
+                key={c.question}
+              >
                 <span className="eyebrow">{c.topic}</span>
-                <h3>
+                <h3 id={`assessment-question-${i}`}>
                   {i + 1}. {c.question}
                 </h3>
                 {c.options.map((option, j) => (
@@ -89,7 +108,8 @@ export function Assessments() {
                     key={option}
                     variant="ghost"
                     disabled={submitted}
-                    className={`quiz-option h-auto justify-start whitespace-normal ${answers[i] === j ? "selected" : ""}`}
+                    aria-pressed={answers[i] === j}
+                    className={`quiz-option h-auto justify-start whitespace-normal ${answers[i] === j ? "selected" : ""} ${submitted && j === c.correct ? "answer-correct" : submitted && answers[i] === j ? "answer-incorrect" : ""}`}
                     onClick={() =>
                       setAnswers((a) => {
                         const next = [...a];
@@ -112,28 +132,33 @@ export function Assessments() {
                     {c.reason}
                   </p>
                 )}
-              </div>
+              </section>
             ))}
-            <Button
-              disabled={!submitted && active.checks.some((_, i) => answers[i] === undefined)}
-              onClick={() => {
-                if (submitted) {
-                  setAnswers([]);
-                  setSubmitted(false);
-                } else {
-                  store.saveResult(scoreAssessment(active, answers, dayKey()));
-                  setSubmitted(true);
-                }
-              }}
-            >
-              {submitted ? <RotateCcw /> : <CheckCircle2 />}
-              {submitted ? "Retake assessment" : "Submit assessment"}
-            </Button>
+            <div className="assessment-submit">
+              <Button
+                disabled={!submitted && active.checks.some((_, i) => answers[i] === undefined)}
+                onClick={() => {
+                  if (submitted) {
+                    setAnswers([]);
+                    setSubmitted(false);
+                  } else {
+                    store.saveResult(scoreAssessment(active, answers, dayKey()));
+                    setSubmitted(true);
+                  }
+                }}
+              >
+                {submitted ? <RotateCcw /> : <CheckCircle2 />}
+                {submitted ? "Retake assessment" : "Submit assessment"}
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {submitted ? "Result saved in this browser" : "Answer every question to submit"}
+              </span>
+            </div>
           </article>
         </>
       ) : (
         <>
-          <div className="flex justify-between items-center mb-5 text-sm text-muted-foreground">
+          <div className="assessment-heading text-sm text-muted-foreground">
             <span>6 focused assessments · 4 checks each</span>
             <span>Results saved in this browser</span>
           </div>

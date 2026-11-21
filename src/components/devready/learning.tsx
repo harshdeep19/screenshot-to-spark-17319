@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -15,6 +15,7 @@ import { useDev } from "@/lib/dev-store";
 import { paths, slugify, pathProgress } from "@/lib/dev-data";
 import { lessons } from "@/lib/devready/lessons";
 import { ContentTools } from "./content-tools";
+import { LessonReading } from "./lesson-reading";
 import {
   PageHeader,
   PathCard,
@@ -79,7 +80,7 @@ export function PathDetail({ pathId }: { pathId: string }) {
       </PageHeader>
       <div className="content-layout">
         <div>
-          <div className="flex gap-3 mb-6">
+          <div className="flex flex-wrap gap-3 mb-6">
             <Difficulty value={path.level} />
             <span className="badge">
               <Clock size={11} />
@@ -184,6 +185,7 @@ export function Lesson({ pathId, topicId }: { pathId: string; topicId: string })
     setChecked(false);
     if (store.loaded && title) store.visit(id, true);
   }, [id, store.loaded]);
+  const article = useRef<HTMLElement>(null);
   const content = lessons[id];
   if (!path || !title)
     return (
@@ -211,14 +213,14 @@ export function Lesson({ pathId, topicId }: { pathId: string; topicId: string })
             : "Curriculum outline — the detailed lesson and scored check are still being prepared."
         }
       />
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <Difficulty value={path.level} />
         <span className="badge">
           {content ? "Concept-specific deep dive" : "Curriculum outline"}
         </span>
       </div>
-      <div className="content-layout">
-        <article className="article">
+      <div className="content-layout lesson-layout">
+        <article className="article" ref={article}>
           {content ? (
             <>
               <h2>What is this concept?</h2>
@@ -282,8 +284,8 @@ export function Lesson({ pathId, topicId }: { pathId: string; topicId: string })
                   <li key={x}>{x}</li>
                 ))}
               </ul>
-              <h2>Practical exercise</h2>
-              <div className="callout">
+              <h2 className="exercise-heading">Practical exercise</h2>
+              <div className="callout exercise-callout">
                 <p>{content.exercise}</p>
               </div>
               <h2>Knowledge assessment</h2>
@@ -298,6 +300,7 @@ export function Lesson({ pathId, topicId }: { pathId: string; topicId: string })
                         <Button
                           key={o}
                           variant="ghost"
+                          aria-pressed={quiz[i] === j}
                           className={`quiz-option h-auto justify-start whitespace-normal ${quiz[i] === j ? "selected" : ""}`}
                           onClick={() => {
                             setQuiz((q) => ({ ...q, [i]: j }));
@@ -370,7 +373,7 @@ export function Lesson({ pathId, topicId }: { pathId: string; topicId: string })
             </>
           )}
           <ContentTools key={id} id={id} title={title} />
-          <div className="flex flex-wrap justify-between gap-3 border-t border-border pt-6 mt-8">
+          <div className="lesson-actions">
             <Button
               variant={store.completed.includes(id) ? "secondary" : "default"}
               onClick={() => store.toggleComplete(id)}
@@ -382,51 +385,75 @@ export function Lesson({ pathId, topicId }: { pathId: string; topicId: string })
                   ? "Mark complete"
                   : "Mark outline reviewed"}
             </Button>
-            {path.modules[index + 1] && (
-              <Button asChild variant="outline">
+          </div>
+          <nav className="lesson-pagination" aria-label="Lesson navigation">
+            {path.modules[index - 1] ? (
+              <Button asChild variant="outline" className="lesson-page-link">
+                <Link
+                  to="/learning-paths/$pathId/$topicId"
+                  params={{ pathId, topicId: slugify(path.modules[index - 1] ?? "") }}
+                >
+                  <ArrowLeft />
+                  <span>
+                    <small>Previous lesson</small>
+                    <strong>{path.modules[index - 1]}</strong>
+                  </span>
+                </Link>
+              </Button>
+            ) : (
+              <span />
+            )}
+            {path.modules[index + 1] ? (
+              <Button asChild variant="outline" className="lesson-page-link">
                 <Link
                   to="/learning-paths/$pathId/$topicId"
                   params={{ pathId, topicId: slugify(path.modules[index + 1] ?? "") }}
                 >
-                  Next lesson
+                  <span>
+                    <small>Next lesson</small>
+                    <strong>{path.modules[index + 1]}</strong>
+                  </span>
+                  <ArrowRight />
+                </Link>
+              </Button>
+            ) : (
+              <Button asChild variant="outline">
+                <Link to="/learning-paths">
+                  All learning paths
                   <ArrowRight />
                 </Link>
               </Button>
             )}
-          </div>
-          {path.modules[index - 1] && (
-            <Link
-              className="text-xs text-muted-foreground flex gap-2 items-center mt-5"
-              to="/learning-paths/$pathId/$topicId"
-              params={{ pathId, topicId: slugify(path.modules[index - 1] ?? "") }}
-            >
-              <ArrowLeft size={13} />
-              Previous lesson
-            </Link>
-          )}
+          </nav>
         </article>
         <aside className="lesson-aside">
-          <div className="eyebrow mb-5">In this learning path</div>
-          {path.modules.map((m, i) => (
-            <Link
-              key={m}
-              className={`module-row !px-0 !text-xs ${i === index ? "text-primary" : ""}`}
-              to="/learning-paths/$pathId/$topicId"
-              params={{ pathId, topicId: slugify(m) }}
-            >
-              {store.completed.includes(`${pathId}/${slugify(m)}`) ? (
-                <CheckCircle2 size={13} />
-              ) : (
-                <Circle size={10} />
-              )}
-              <span>
-                {m}
-                {!lessons[`${pathId}/${slugify(m)}`] && (
-                  <span className="text-muted-foreground text-[10px] block">Outline</span>
-                )}
-              </span>
-            </Link>
-          ))}
+          <LessonReading article={article} lessonId={id} />
+          <details className="path-navigation">
+            <summary>In this learning path</summary>
+            <nav aria-label="Path modules">
+              {path.modules.map((m, i) => (
+                <Link
+                  key={m}
+                  aria-current={i === index ? "page" : undefined}
+                  className={`module-row !px-0 !text-xs ${i === index ? "text-primary" : ""}`}
+                  to="/learning-paths/$pathId/$topicId"
+                  params={{ pathId, topicId: slugify(m) }}
+                >
+                  {store.completed.includes(`${pathId}/${slugify(m)}`) ? (
+                    <CheckCircle2 size={13} />
+                  ) : (
+                    <Circle size={10} />
+                  )}
+                  <span>
+                    {m}
+                    {!lessons[`${pathId}/${slugify(m)}`] && (
+                      <span className="text-muted-foreground text-[10px] block">Outline</span>
+                    )}
+                  </span>
+                </Link>
+              ))}
+            </nav>
+          </details>
         </aside>
       </div>
     </>

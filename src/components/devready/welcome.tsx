@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Code2, Check, BookOpen, Network, Zap } from "lucide-react";
+import { ArrowRight, Code2, BookOpen, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RelatedPaths, EngineeringArt, ArchitectureDiagram, CodeBlock } from "./common";
 export function Welcome() {
   return (
     <div className="marketing">
-      <header className="flex items-center justify-between">
+      <header className="marketing-header">
         <Link to="/" className="brand !p-0">
           <span className="brand-mark">
             <Code2 size={21} />
@@ -21,7 +21,7 @@ export function Welcome() {
           </Link>
         </Button>
       </header>
-      <section className="marketing-hero">
+      <section className="marketing-hero" aria-label="DevReady frontend engineering">
         <span className="badge violet">LEARN DEEP. BUILD SMART. GET INTERVIEW READY.</span>
         <h1 className="mt-6">DevReady</h1>
         <h2 className="text-3xl max-w-3xl mt-5 leading-snug font-semibold">
@@ -29,11 +29,11 @@ export function Welcome() {
         </h2>
         <p>
           Master JavaScript, React, frontend architecture and real-world engineering. Build the
-          knowledge and confidence to crack your next frontend interview.
+          understanding to explain your decisions in your next frontend interview.
         </p>
         <div className="flex flex-wrap gap-3">
           <Button asChild size="lg">
-            <Link to="/">
+            <Link to="/learning-paths">
               Start learning
               <ArrowRight />
             </Link>
@@ -41,6 +41,20 @@ export function Welcome() {
           <Button asChild size="lg" variant="outline">
             <Link to="/learning-paths">Explore learning paths</Link>
           </Button>
+        </div>
+        <div className="marketing-proof">
+          <span>
+            <BookOpen size={16} />
+            Concept-specific lessons
+          </span>
+          <span>
+            <Code2 size={16} />
+            Isolated JavaScript sample tests
+          </span>
+          <span>
+            <Network size={16} />
+            Production trade-offs
+          </span>
         </div>
       </section>
       <section className="preview-band">
@@ -203,7 +217,7 @@ export function Welcome() {
           },
           {
             q: "Does the coding arena execute my code?",
-            a: "This first version offers local editing, sample-output previews and reference solutions. It does not execute arbitrary code.",
+            a: "Supported JavaScript challenges run sample tests in an isolated environment with a three-second limit. React and TypeScript challenges are review-only.",
           },
           {
             q: "Where is my progress saved?",

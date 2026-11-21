@@ -1,14 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Flame,
-  Target,
-  BookOpen,
-  Code2,
-  Activity,
-  CalendarDays,
-  CheckCircle2,
-} from "lucide-react";
+import { ArrowRight, Flame, Target, BookOpen, Code2, Activity, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDev } from "@/lib/dev-store";
 import { paths, slugify, pathProgress } from "@/lib/dev-data";
@@ -69,9 +60,9 @@ export function Overview() {
           </div>
         </div>
       </div>
-      <section className="prep-banner">
+      <section className="prep-banner" aria-label="Recommended learning action">
         <div>
-          <span className="badge cyan">LEARN → PRACTICE → IMPROVE</span>
+          <span className="badge cyan">YOUR NEXT LEARNING ACTION</span>
           <h2>
             {store.lastLesson ? "Pick up where you left off." : "A strong foundation starts here."}
           </h2>
